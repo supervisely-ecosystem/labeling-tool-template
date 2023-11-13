@@ -1,9 +1,9 @@
 import supervisely as sly
 
-from supervisely.app.widgets import Container
+from supervisely.app.widgets import Container, Text
 
-import src.ui.input as input
+test_text = Text("Hello, World!")
 
-layout = Container(widgets=[input.card])
+layout = Container(widgets=[test_text])
 
 app = sly.Application(layout=layout)
