@@ -17,10 +17,13 @@ def debug(request: Request):
     print(f"Manual selected figure changed, request: {request}")
     print(f"Dir of request: {dir(request)}")
 
+    request_dict = request.__dict__
+    print(f"Request dict: {request_dict}")
+
     state = request.state
 
-    сontext = request.state.context
-    print(f"Context: {сontext}")
+    context = request.state.context
+    print(f"Context: {context}")
 
     print(f"State: {state}")
 
