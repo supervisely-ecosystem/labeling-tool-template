@@ -23,6 +23,12 @@ def debug(request: Request):
 
     print(f"Dir of state: {dir(state)}")
 
+    api = state.api
+    print(f"API: {api}")
+    state = state.state
+
+    print(f"State: {state}")
+
 
 # @server.post("/brush_tool_released")
 # def brush_tool_released(request: Request):
