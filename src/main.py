@@ -13,7 +13,8 @@ server = app.get_server()
 
 
 @server.post("/manual_selected_figure_changed")
-async def debug(request: Request):
+async def debug(request: Request, **kwargs):
+    print(f"Kwargs: {kwargs}")
     print(f"Manual selected figure changed, request: {request}")
     print(f"Dir of request: {dir(request)}")
 
@@ -25,10 +26,10 @@ async def debug(request: Request):
 
     api = state.api
     print(f"API: {api}")
-    state = state.state
 
-    state_dict = state.__dict__
-    print(f"State dict: {state_dict}")
+    app_state = state.state
+
+    print(f"App state: {app_state}")
 
 
 # @server.post("/brush_tool_released")
