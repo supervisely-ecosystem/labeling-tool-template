@@ -27,6 +27,9 @@ async def debug(request: Request):
     print(f"API: {api}")
     state = state.state
 
+    state_dict = state.__dict__
+    print(f"State dict: {state_dict}")
+
 
 # @server.post("/brush_tool_released")
 # def brush_tool_released(request: Request):
