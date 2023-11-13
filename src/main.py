@@ -12,22 +12,17 @@ app = sly.Application(layout=layout)
 server = app.get_server()
 
 
-@server.post("/")
+@server.post("/manual_selected_figure_changed")
 def debug(request: Request):
-    print(f"Request: {request}")
-
-    return {"status": "ok"}
+    print(f"Manual selected figure changed, request: {request}")
+    print(f"Dir of request: {dir(request)}")
 
 
 # @server.post("/brush_tool_released")
 # def brush_tool_released(request: Request):
 #     print(f"Brush tool released, request: {request}")
 
-#     return {"status": "ok"}
-
 
 # @server.post("/eraser_tool_released")
 # def eraser_tool_released(request: Request):
 #     print(f"Eraser tool released, request: {request}")
-
-#     return {"status": "ok"}
