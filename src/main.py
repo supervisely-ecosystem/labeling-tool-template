@@ -19,6 +19,9 @@ def debug(request: Request):
 
     state = request.state
 
+    сontext = request.state.context
+    print(f"Context: {сontext}")
+
     print(f"State: {state}")
 
     print(f"Dir of state: {dir(state)}")
@@ -34,7 +37,7 @@ def debug(request: Request):
 
     print(f"App state: {app_state}")
 
-    request.json()
+    # request.json()
 
 
 # @server.post("/brush_tool_released")
