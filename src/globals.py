@@ -15,12 +15,12 @@ api = sly.Api.from_env()
 
 
 # * This variable requires SLY_APP_DATA_DIR in local.env file.
-SLY_APP_DATA_DIR = sly.app.get_data_dir()
+# SLY_APP_DATA_DIR = sly.app.get_data_dir()
 
 
 # * If the app needed static dir (showing local path in web UI), it should be created here.
 # * If not needed, this code can be securely removed.
-STATIC_DIR = os.path.join(SLY_APP_DATA_DIR, "static")
+# STATIC_DIR = os.path.join(SLY_APP_DATA_DIR, "static")
 
 
 # * To avoid global variables in different modules, it's better to use g.STATE (g.AppState) object

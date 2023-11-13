@@ -11,7 +11,6 @@ from supervisely.app.widgets import (
 )
 
 import src.globals as g
-import src.ui.settings as settings
 
 dataset_thumbnail = DatasetThumbnail()
 dataset_thumbnail.hide()
@@ -45,9 +44,6 @@ if g.STATE.selected_dataset and g.STATE.selected_project:
         g.api.dataset.get_info_by_id(g.STATE.selected_dataset),
     )
     dataset_thumbnail.show()
-
-    settings.card.unlock()
-    settings.card.uncollapse()
 elif g.STATE.selected_project:
     # If the app was loaded from a project: showing the dataset selector in compact mode.
     sly.logger.debug("App was loaded from a project.")
@@ -131,9 +127,6 @@ def load_dataset():
         g.api.dataset.get_info_by_id(g.STATE.selected_dataset),
     )
     dataset_thumbnail.show()
-
-    settings.card.unlock()
-    settings.card.uncollapse()
 
     card.lock()
 
