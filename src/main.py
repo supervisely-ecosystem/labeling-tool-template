@@ -1,5 +1,6 @@
 import supervisely as sly
 from fastapi import Request
+from typing import Any, Dict
 
 from supervisely.app.widgets import Container, Text
 
@@ -14,33 +15,11 @@ server = app.get_server()
 
 @server.post("/manual_selected_figure_changed")
 def debug(request: Request):
-    print(f"Manual selected figure changed, request: {request}")
-    print(f"Dir of request: {dir(request)}")
+    request_state = request.state
+    api: sly.Api = request_state.api
+    context: Dict[str, Any] = request_state.context
 
-    request_dict = request.__dict__
-    print(f"Request dict: {request_dict}")
-
-    state = request.state
-
-    context = request.state.context
-    print(f"Context: {context}")
-
-    print(f"State: {state}")
-
-    print(f"Dir of state: {dir(state)}")
-
-    values = request.values
-
-    print(f"Values: {values}")
-
-    api = state.api
-    print(f"API: {api}")
-
-    app_state = state.state
-
-    print(f"App state: {app_state}")
-
-    # request.json()
+    print(f"Manual selected figure changed, context: {context}")
 
 
 # @server.post("/brush_tool_released")
