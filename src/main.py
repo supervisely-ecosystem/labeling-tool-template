@@ -13,7 +13,7 @@ server = app.get_server()
 
 
 @server.post("/manual_selected_figure_changed")
-async def debug(request: Request):
+def debug(request: Request):
     print(f"Manual selected figure changed, request: {request}")
     print(f"Dir of request: {dir(request)}")
 
