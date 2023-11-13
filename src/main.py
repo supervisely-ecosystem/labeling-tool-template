@@ -13,21 +13,9 @@ server = app.get_server()
 
 
 @server.post("/manual_selected_figure_changed")
-def debug(request: Request):
-    print(f"Manual selected figure changed, request: {request}")
-    print(f"Dir of request: {dir(request)}")
-
-    state = request.state
-
-    print(f"State: {state}")
-
-    print(f"Dir of state: {dir(state)}")
-
-    api = state.api
-    print(f"API: {api}")
-    state = state.state
-
-    print(f"State: {state}")
+async def debug(request: Request):
+    json = await request.json()
+    print(f"Manual selected figure changed, request in JSON: {json}")
 
 
 # @server.post("/brush_tool_released")
