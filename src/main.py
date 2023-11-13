@@ -13,13 +13,17 @@ app = sly.Application(layout=layout)
 server = app.get_server()
 
 
-@server.post("/manual_selected_figure_changed")
-def debug(request: Request):
+@server.post("/tools_bitmap_brush_figure_changed")
+def brush_figure_changed(request: Request):
     request_state = request.state
     api: sly.Api = request_state.api
     context: Dict[str, Any] = request_state.context
 
-    print(f"Manual selected figure changed, context: {context}")
+    print(f"Brush changed figure, context: {context}")
+
+    tool_state = context.get("toolState", {})
+
+    print(f"Tool state: {tool_state}")
 
 
 # @server.post("/brush_tool_released")
