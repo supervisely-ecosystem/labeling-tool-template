@@ -17,6 +17,12 @@ def debug(request: Request):
     print(f"Manual selected figure changed, request: {request}")
     print(f"Dir of request: {dir(request)}")
 
+    state = request.state
+    session = request.session
+
+    print(f"State: {state}")
+    print(f"Session: {session}")
+
 
 # @server.post("/brush_tool_released")
 # def brush_tool_released(request: Request):
