@@ -88,7 +88,7 @@ def update_figure(figure_id: int, label: sly.Label):
     else:
         geometry = json_data.pop("points")
         json_data["geometry"] = {
-            "pointsц": geometry,
+            "points": geometry,
         }
 
     # debug_save_path = os.path.join(SAVE_DIR, "debug.json")
