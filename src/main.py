@@ -91,6 +91,9 @@ def figure_changed(request: Request):
         f"Type of label: {type(sly_label)} with geometry: {sly_label.geometry.name()}"
     )
 
+    sly_label = process_label(sly_label)
+    update_figure(figure_id, sly_label)
+
 
 def process_label(label: sly.Label) -> sly.Label:
     # Implement your logic here.
