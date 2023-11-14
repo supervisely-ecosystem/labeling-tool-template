@@ -53,6 +53,8 @@ def get_figure_by_id(
     tags = get_figure_tags(figure_id)
     response["tags"] = tags
 
+    pprint(response)
+
     return sly.Label.from_json(response, project_meta)
 
 
