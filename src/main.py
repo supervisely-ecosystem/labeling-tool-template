@@ -2,62 +2,63 @@ import supervisely as sly
 from fastapi import Request
 from typing import Any, Dict
 
-from supervisely.app.widgets import Container, Editor
+from supervisely.app.widgets import Container, Switch, Field
 
 from src.saver import get_figure_by_id, update_figure
 
-logger_widget = Editor(
-    "Logs:", height_px=200, language_mode="plain_text", readonly=True
+apply_processing = Switch()
+apply_processing_field = Field(
+    title="Apply processing",
+    description="If turned on, then label will be processed after crating it with bitmap brush tool",
+    content=apply_processing,
 )
 
-layout = Container(widgets=[logger_widget])
+layout = Container(widgets=[apply_processing_field])
 
 app = sly.Application(layout=layout)
 
 server = app.get_server()
 
 
-def set_log_in_widget(log: str):
-    text = logger_widget.get_text()
-    new_text = text + "\n" + log
-    logger_widget.set_text(new_text)
-
-
 @server.post("/tools_bitmap_brush_figure_changed")
 def brush_figure_changed(request: Request):
+    sly.logger.info("Bitmap brush figure changed")
     request_state = request.state
     api: sly.Api = request_state.api
     context: Dict[str, Any] = request_state.context
 
-    sly.logger.info(f"Brush changed figure, context: {context}")
-    set_log_in_widget(f"Brush changed figure, context: {context}")
-
     tool_state = context.get("toolState", {})
-    tool_option = tool_state.get("option", None)
+    tool_option = tool_state.get("option")
 
-    print(f"Tool state: {tool_state}")
+    sly.logger.info(f"Tool state: {tool_state}, tool option: {tool_option}")
 
     if tool_option != "fill":
+        sly.logger.info("Option is not fill, skipping")
+        return
+
+    if not apply_processing.is_switched():
+        sly.logger.info("Processing is not enabled, skipping")
         return
 
     class_title = context.get("figureClassTitle")
     project_id = context.get("projectId")
-    project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
 
-    set_log_in_widget(f"Class title: {class_title}, project id: {project_id}")
+    sly.logger.info(f"Class title: {class_title}, project id: {project_id}")
+
+    project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
 
     figure_id = context.get("figureId")
     sly_label = get_figure_by_id(figure_id, class_title, project_meta)
 
-    set_log_in_widget("Retrieved sly.Label")
+    sly.logger.info(f"Retrieved sly.Label by id: {figure_id}")
 
     sly_label = process_label(sly_label)
 
-    set_log_in_widget("Processed sly.Label")
+    sly.logger.info(f"Processed sly.Label with id: {figure_id}")
 
     update_figure(figure_id, sly_label)
 
-    set_log_in_widget("Updated figure")
+    sly.logger.info(f"Updated figure with id: {figure_id}")
 
 
 @server.post("/manual_selected_figure_changed")
