@@ -1,3 +1,4 @@
+# import os
 import requests
 import supervisely as sly
 from typing import List, Dict
@@ -21,20 +22,19 @@ API_TOKEN = (
 # TEAM_ID = 96
 # WORKSPACE_ID = 148
 # PROJECT_ID = 569
-# # DATASET_ID = 986
-# IMAGE_ID = 33979
-# FIGURE_ID = 614776
+# # # DATASET_ID = 986
+# # IMAGE_ID = 33979
+# # FIGURE_ID = 614776
 
-# CLASS_TITLES = {
-#     "bitmap": "tkot-masks",
-#     "polygon": "tkot-polygon",
-#     "polyline": "tkot-line",
-#     "bbox": "tkot-bbox",
-#     "point": "tkot-point",
-# }
+# # CLASS_TITLES = {
+# #     "bitmap": "tkot-masks",
+# #     "polygon": "tkot-polygon",
+# #     "polyline": "tkot-line",
+# #     "bbox": "tkot-bbox",
+# #     "point": "tkot-point",
+# # }
 
 # project_meta = sly.ProjectMeta.from_json(api.project.get_meta(PROJECT_ID))
-# image_np = api.image.download_np(IMAGE_ID)
 
 
 def get_figure_by_id(
@@ -78,8 +78,6 @@ def update_figure(figure_id: int, label: sly.Label):
     json_data = label.to_json()
     json_data["id"] = figure_id
 
-    pprint(json_data)
-
     shape = json_data.get("shape")
     if shape == "bitmap":
         geometry = json_data.pop(shape)
@@ -87,6 +85,14 @@ def update_figure(figure_id: int, label: sly.Label):
         json_data["geometry"] = {
             shape: geometry,
         }
+    else:
+        geometry = json_data.pop("points")
+        json_data["geometry"] = {
+            "pointsц": geometry,
+        }
+
+    # debug_save_path = os.path.join(SAVE_DIR, "debug.json")
+    # sly.json.dump_json_file(json_data, debug_save_path)
 
     response = requests.put(
         "http://65.108.69.24:8088/public/api/v3/figures.editInfo",
@@ -98,17 +104,31 @@ def update_figure(figure_id: int, label: sly.Label):
     print(response.json())
 
 
-# def save_label(image_np: np.ndarray, label: sly.Label, save_path: str):
+# IMAGE_ID = 33979
+# FIGURE_IDS = [614793, 614796]
+
+# image_np = api.image.download_np(IMAGE_ID)
+
+
+# # label = get_figure_by_id(FIGURE_IDS[0], "tkot-point", project_meta)
+# label = get_figure_by_id(FIGURE_IDS[1], "tkot-line", project_meta)
+
+
+# def save_label(image_np, label: sly.Label, save_path: str):
 #     image_copy = image_np.copy()
 #     label.draw(image_copy)
 #     sly.image.write(save_path, image_copy)
 
 
 # BEFORE_EDIT_SAVE_PATH = os.path.join(SAVE_DIR, "before_edit.png")
-# BEFORE_EDIT_JSON_SAVE_PATH = os.path.join(SAVE_DIR, "before_edit.json")
+# save_label(image_np, label, BEFORE_EDIT_SAVE_PATH)
+# # BEFORE_EDIT_JSON_SAVE_PATH = os.path.join(SAVE_DIR, "before_edit.json")
 # AFTER_EDIT_SAVE_PATH = os.path.join(SAVE_DIR, "after_edit.png")
-# AFTER_EDIT_JSON_SAVE_PATH = os.path.join(SAVE_DIR, "after_edit.json")
+# label = edit_label(label)
+# save_label(image_np, label, AFTER_EDIT_SAVE_PATH)
+# # AFTER_EDIT_JSON_SAVE_PATH = os.path.join(SAVE_DIR, "after_edit.json")
 
+# update_figure(FIGURE_IDS[1], label)
 
 # label = get_figure_by_id(FIGURE_ID, CLASS_TITLE, project_meta)
 
