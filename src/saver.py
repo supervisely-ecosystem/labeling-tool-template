@@ -76,6 +76,8 @@ def update_figure(figure_id: int, label: sly.Label):
     json_data = label.to_json()
     json_data["id"] = figure_id
 
+    pprint(json_data)
+
     shape = json_data.get("shape")
 
     geometry = json_data.pop(shape)
