@@ -23,6 +23,8 @@ server = app.get_server()
 @apply_processing.value_changed
 def debug(is_switched):
     sly.logger.info(f"Value changed! Is switched now: {is_switched}")
+    json_state = apply_processing.get_json_state()
+    sly.logger.info(f"Json state: {json_state}")
 
 
 @server.post("/tools_bitmap_brush_figure_changed")
@@ -40,6 +42,9 @@ def brush_figure_changed(request: Request):
     if tool_option != "fill":
         sly.logger.info("Option is not fill, skipping")
         return
+
+    json_state = apply_processing.get_json_state()
+    sly.logger.info(f"Json state: {json_state}")
 
     processing_enabled = apply_processing.is_switched()
     sly.logger.info(f"Processing enabled: {processing_enabled}")
