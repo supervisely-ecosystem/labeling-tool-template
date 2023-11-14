@@ -26,10 +26,11 @@ def set_log_in_widget(log: str):
 @server.post("/tools_bitmap_brush_figure_changed")
 def brush_figure_changed(request: Request):
     request_state = request.state
-    # api: sly.Api = request_state.api
+    api: sly.Api = request_state.api
     context: Dict[str, Any] = request_state.context
 
     sly.logger.info(f"Brush changed figure, context: {context}")
+    set_log_in_widget(f"Brush changed figure, context: {context}")
 
     tool_state = context.get("toolState", {})
     tool_option = tool_state.get("option", None)
@@ -39,11 +40,24 @@ def brush_figure_changed(request: Request):
     if tool_option != "fill":
         return
 
+    class_title = context.get("figureClassTitle")
+    project_id = context.get("projectId")
+    project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
+
+    set_log_in_widget(f"Class title: {class_title}, project id: {project_id}")
+
     figure_id = context.get("figureId")
-    sly_label = get_figure_by_id(figure_id)
+    sly_label = get_figure_by_id(figure_id, class_title, project_meta)
+
+    set_log_in_widget("Retrieved sly.Label")
+
     sly_label = process_label(sly_label)
 
+    set_log_in_widget("Processed sly.Label")
+
     update_figure(figure_id, sly_label)
+
+    set_log_in_widget("Updated figure")
 
 
 @server.post("/manual_selected_figure_changed")
