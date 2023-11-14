@@ -40,7 +40,9 @@ API_TOKEN = (
 # image_np = api.image.download_np(IMAGE_ID)
 
 
-def get_figure_by_id(figure_id: int, class_title: str, project_meta: sly.ProjectMeta):
+def get_figure_by_id(
+    figure_id: int, class_title: str, project_meta: sly.ProjectMeta
+) -> sly.Label:
     response = requests.get(
         "http://65.108.69.24:8088/public/api/v3/figures.info",
         params={"id": figure_id, "decompressBitmap": False},
