@@ -6,8 +6,7 @@ from supervisely.app.widgets import Container, Switch, Field, Checkbox
 
 from src.saver import get_figure_by_id, update_figure
 
-# apply_processing = Switch()
-apply_processing = Checkbox("Apply processing")
+apply_processing = Switch()
 apply_processing_field = Field(
     title="Apply processing",
     description="If turned on, then label will be processed after crating it with bitmap brush tool",
@@ -19,6 +18,11 @@ layout = Container(widgets=[apply_processing_field])
 app = sly.Application(layout=layout)
 
 server = app.get_server()
+
+
+@apply_processing.value_changed
+def debug(is_switched):
+    sly.logger.info(f"Value changed! Is switched now: {is_switched}")
 
 
 @server.post("/tools_bitmap_brush_figure_changed")
@@ -37,7 +41,7 @@ def brush_figure_changed(request: Request):
         sly.logger.info("Option is not fill, skipping")
         return
 
-    processing_enabled = apply_processing.is_checked()
+    processing_enabled = apply_processing.is_switched()
     sly.logger.info(f"Processing enabled: {processing_enabled}")
     sly.logger.info(f"Processing enabled type: {type(processing_enabled)}")
 
