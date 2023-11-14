@@ -92,7 +92,12 @@ def figure_changed(request: Request):
     )
 
     sly_label = process_label(sly_label)
+
+    set_log_in_widget("Processed sly.Label")
+
     update_figure(figure_id, sly_label)
+
+    set_log_in_widget("Updated figure")
 
 
 def process_label(label: sly.Label) -> sly.Label:
