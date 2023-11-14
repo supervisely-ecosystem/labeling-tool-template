@@ -2,13 +2,13 @@ import supervisely as sly
 from fastapi import Request
 from typing import Any, Dict
 
-from supervisely.app.widgets import Container, Text
+from supervisely.app.widgets import Container, TextArea
 
 from src.saver import get_figure_by_id
 
-test_text = Text("No logs yet")
+logger_text_area = TextArea("Logs:", readonly=True)
 
-layout = Container(widgets=[test_text])
+layout = Container(widgets=[logger_text_area])
 
 app = sly.Application(layout=layout)
 
@@ -16,7 +16,9 @@ server = app.get_server()
 
 
 def set_log_in_widget(log: str):
-    test_text.text = log
+    value = logger_text_area.get_value()
+    new_value = value + "\n" + log
+    logger_text_area.set_value(new_value)
 
 
 @server.post("/tools_bitmap_brush_figure_changed")
