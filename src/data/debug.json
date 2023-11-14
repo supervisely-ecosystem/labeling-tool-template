@@ -1,31 +1,15 @@
 {
-    "classTitle": "tkot-line",
-    "description": "",
-    "tags": [],
-    "shape": "line",
-    "geometryType": "line",
-    "updatedAt": "2023-11-14T08:15:40.939Z",
-    "createdAt": "2023-11-14T06:41:12.438Z",
-    "id": 614796,
-    "classId": 29353,
+    "id": 614810,
     "geometry": {
         "points": {
             "exterior": [
                 [
-                    524,
-                    747
+                    647,
+                    362
                 ],
                 [
-                    811,
-                    571
-                ],
-                [
-                    818,
-                    279
-                ],
-                [
-                    1011,
-                    598
+                    793,
+                    472
                 ]
             ],
             "interior": []

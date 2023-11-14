@@ -34,8 +34,6 @@ API_TOKEN = (
 # #     "point": "tkot-point",
 # # }
 
-# project_meta = sly.ProjectMeta.from_json(api.project.get_meta(PROJECT_ID))
-
 
 def get_figure_by_id(
     figure_id: int, class_title: str, project_meta: sly.ProjectMeta
@@ -70,7 +68,7 @@ def get_figure_tags(figure_id: int) -> List[Dict]:
 
 def edit_label(label: sly.Label) -> sly.Label:
     """Debug function, which recieves bitmap sly.Label and edits it."""
-    return label.translate(100, 100)
+    return label.translate(10, 10)
 
 
 def update_figure(figure_id: int, label: sly.Label):
@@ -78,40 +76,53 @@ def update_figure(figure_id: int, label: sly.Label):
     json_data = label.to_json()
     json_data["id"] = figure_id
 
+    request = {
+        "id": figure_id,
+    }
+
     shape = json_data.get("shape")
     if shape == "bitmap":
         geometry = json_data.pop(shape)
 
-        json_data["geometry"] = {
+        request["geometry"] = {
             shape: geometry,
         }
     else:
         geometry = json_data.pop("points")
-        json_data["geometry"] = {
+        request["geometry"] = {
             "points": geometry,
         }
 
     # debug_save_path = os.path.join(SAVE_DIR, "debug.json")
-    # sly.json.dump_json_file(json_data, debug_save_path)
+    # sly.json.dump_json_file(request, debug_save_path)
 
     response = requests.put(
         "http://65.108.69.24:8088/public/api/v3/figures.editInfo",
         headers={"x-api-key": API_TOKEN},
-        json=json_data,
+        json=request,
     )
 
     print(response.status_code)
     print(response.json())
 
 
-# IMAGE_ID = 33979
-# FIGURE_IDS = [614793, 614796]
+# import os
 
+# api = sly.Api(server_address="http://65.108.69.24:8088", token=API_TOKEN)
+
+# ABSOLUTE_PATH = os.path.dirname(os.path.realpath(__file__))
+# SAVE_DIR = os.path.join(ABSOLUTE_PATH, "data")
+# sly.fs.mkdir(SAVE_DIR, remove_content_if_exists=True)
+# PROJECT_ID = 569
+# IMAGE_ID = 33979
+# project_meta = sly.ProjectMeta.from_json(api.project.get_meta(PROJECT_ID))
 # image_np = api.image.download_np(IMAGE_ID)
 
 
-# # label = get_figure_by_id(FIGURE_IDS[0], "tkot-point", project_meta)
-# label = get_figure_by_id(FIGURE_IDS[1], "tkot-line", project_meta)
+# FIGURE_IDS = [614810]
+
+# label = get_figure_by_id(FIGURE_IDS[0], "tkot-bbox", project_meta)
+# # label = get_figure_by_id(FIGURE_IDS[1], "tkot-line", project_meta)
 
 
 # def save_label(image_np, label: sly.Label, save_path: str):
@@ -122,13 +133,13 @@ def update_figure(figure_id: int, label: sly.Label):
 
 # BEFORE_EDIT_SAVE_PATH = os.path.join(SAVE_DIR, "before_edit.png")
 # save_label(image_np, label, BEFORE_EDIT_SAVE_PATH)
-# # BEFORE_EDIT_JSON_SAVE_PATH = os.path.join(SAVE_DIR, "before_edit.json")
+# # # BEFORE_EDIT_JSON_SAVE_PATH = os.path.join(SAVE_DIR, "before_edit.json")
 # AFTER_EDIT_SAVE_PATH = os.path.join(SAVE_DIR, "after_edit.png")
 # label = edit_label(label)
 # save_label(image_np, label, AFTER_EDIT_SAVE_PATH)
-# # AFTER_EDIT_JSON_SAVE_PATH = os.path.join(SAVE_DIR, "after_edit.json")
+# # # AFTER_EDIT_JSON_SAVE_PATH = os.path.join(SAVE_DIR, "after_edit.json")
 
-# update_figure(FIGURE_IDS[1], label)
+# update_figure(FIGURE_IDS[0], label)
 
 # label = get_figure_by_id(FIGURE_ID, CLASS_TITLE, project_meta)
 
