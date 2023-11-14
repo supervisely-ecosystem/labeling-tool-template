@@ -80,6 +80,9 @@ def update_figure(figure_id: int, label: sly.Label):
 
     geometry = json_data.pop(shape)
 
+    if "origin" in geometry:
+        geometry["origin"] = [0, 0]
+
     json_data["geometry"] = {
         shape: geometry,
     }

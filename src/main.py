@@ -4,7 +4,7 @@ from typing import Any, Dict
 
 from supervisely.app.widgets import Container, Editor
 
-from src.saver import get_figure_by_id
+from src.saver import get_figure_by_id, update_figure
 
 logger_widget = Editor(
     "Logs:", height_px=200, language_mode="plain_text", readonly=True
@@ -42,6 +42,8 @@ def brush_figure_changed(request: Request):
     figure_id = context.get("figureId")
     sly_label = get_figure_by_id(figure_id)
     sly_label = process_label(sly_label)
+
+    update_figure(figure_id, sly_label)
 
 
 @server.post("/manual_selected_figure_changed")
