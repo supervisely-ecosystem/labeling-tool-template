@@ -2,15 +2,15 @@ import supervisely as sly
 from fastapi import Request
 from typing import Any, Dict
 
-from supervisely.app.widgets import Container, Switch, Field, Checkbox
+from supervisely.app.widgets import Container, Switch, Field
 
 from src.saver import get_figure_by_id, update_figure
 
-apply_processing = Switch()
+process_labels = Switch()
 apply_processing_field = Field(
-    title="Apply processing",
-    description="If turned on, then label will be processed after crating it with bitmap brush tool",
-    content=apply_processing,
+    title="Process labels",
+    description="If turned on, then label will be processed after creating it with bitmap brush tool",
+    content=process_labels,
 )
 
 layout = Container(widgets=[apply_processing_field])
@@ -20,11 +20,11 @@ app = sly.Application(layout=layout)
 server = app.get_server()
 
 
-@apply_processing.value_changed
+@process_labels.value_changed
 def debug(is_switched):
-    sly.logger.info(f"Value changed! Is switched now: {is_switched}")
-    json_state = apply_processing.get_json_state()
-    sly.logger.info(f"Json state: {json_state}")
+    print(f"Process labels value changed. Is switched now: {is_switched}")
+    switched = process_labels.is_switched()
+    print(f"Switched: {switched}")
 
 
 @server.post("/tools_bitmap_brush_figure_changed")
@@ -43,14 +43,7 @@ def brush_figure_changed(request: Request):
         sly.logger.info("Option is not fill, skipping")
         return
 
-    json_state = apply_processing.get_json_state()
-    sly.logger.info(f"Json state: {json_state}")
-
-    processing_enabled = apply_processing.is_switched()
-    sly.logger.info(f"Processing enabled: {processing_enabled}")
-    sly.logger.info(f"Processing enabled type: {type(processing_enabled)}")
-
-    if not processing_enabled:
+    if not process_labels.is_switched():
         sly.logger.info("Processing is not enabled, skipping")
         return
 
@@ -118,21 +111,3 @@ def brush_figure_changed(request: Request):
 def process_label(label: sly.Label) -> sly.Label:
     # Implement your logic here.
     return label.translate(10, 10)
-
-
-# {
-#     "datasetId": 986,
-#     "teamId": 96,
-#     "workspaceId": 148,
-#     "projectId": 569,
-#     "imageId": 33976,
-#     "figureId": 614761,
-#     "figureClassId": 29347,
-#     "figureClassTitle": "kiwi",
-#     "toolClassId": 29347,
-#     "sessionId": "8004db32-b12f-4a5b-a4d1-99f57a8b4463",
-#     "tool": "bitmapBrush",
-#     "userId": 89,
-#     "jobId": None,
-#     "toolState": {"option": "fill"},
-# }
