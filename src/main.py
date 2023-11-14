@@ -2,11 +2,12 @@ import supervisely as sly
 from fastapi import Request
 from typing import Any, Dict
 
-from supervisely.app.widgets import Container, Switch, Field
+from supervisely.app.widgets import Container, Switch, Field, Checkbox
 
 from src.saver import get_figure_by_id, update_figure
 
-apply_processing = Switch()
+# apply_processing = Switch()
+apply_processing = Checkbox("Apply processing")
 apply_processing_field = Field(
     title="Apply processing",
     description="If turned on, then label will be processed after crating it with bitmap brush tool",
@@ -36,7 +37,7 @@ def brush_figure_changed(request: Request):
         sly.logger.info("Option is not fill, skipping")
         return
 
-    processing_enabled = apply_processing.is_switched()
+    processing_enabled = apply_processing.is_checked()
     sly.logger.info(f"Processing enabled: {processing_enabled}")
     sly.logger.info(f"Processing enabled type: {type(processing_enabled)}")
 
@@ -65,44 +66,44 @@ def brush_figure_changed(request: Request):
     sly.logger.info(f"Updated figure with id: {figure_id}")
 
 
-@server.post("/manual_selected_figure_changed")
-def figure_changed(request: Request):
-    request_state = request.state
-    api: sly.Api = request_state.api
-    context: Dict[str, Any] = request_state.context
+# @server.post("/manual_selected_figure_changed")
+# def figure_changed(request: Request):
+#     request_state = request.state
+#     api: sly.Api = request_state.api
+#     context: Dict[str, Any] = request_state.context
 
-    sly.logger.info(f"Figure changed, context: {context}")
-    set_log_in_widget(f"Figure changed, context: {context}")
+#     sly.logger.info(f"Figure changed, context: {context}")
+#     set_log_in_widget(f"Figure changed, context: {context}")
 
-    figure_id = context.get("figureId")
-    class_title = context.get("figureClassTitle")
-    project_id = context.get("projectId")
+#     figure_id = context.get("figureId")
+#     class_title = context.get("figureClassTitle")
+#     project_id = context.get("projectId")
 
-    sly.logger.info(
-        f"Figure id: {figure_id}, class title: {class_title}, project id: {project_id}"
-    )
-    set_log_in_widget(
-        f"Figure id: {figure_id}, class title: {class_title}, project id: {project_id}"
-    )
+#     sly.logger.info(
+#         f"Figure id: {figure_id}, class title: {class_title}, project id: {project_id}"
+#     )
+#     set_log_in_widget(
+#         f"Figure id: {figure_id}, class title: {class_title}, project id: {project_id}"
+#     )
 
-    project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
+#     project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
 
-    sly_label = get_figure_by_id(figure_id, class_title, project_meta)
+#     sly_label = get_figure_by_id(figure_id, class_title, project_meta)
 
-    sly.logger.info(
-        f"Type of label: {type(sly_label)} with geometry: {sly_label.geometry.name()}"
-    )
-    set_log_in_widget(
-        f"Type of label: {type(sly_label)} with geometry: {sly_label.geometry.name()}"
-    )
+#     sly.logger.info(
+#         f"Type of label: {type(sly_label)} with geometry: {sly_label.geometry.name()}"
+#     )
+#     set_log_in_widget(
+#         f"Type of label: {type(sly_label)} with geometry: {sly_label.geometry.name()}"
+#     )
 
-    sly_label = process_label(sly_label)
+#     sly_label = process_label(sly_label)
 
-    set_log_in_widget("Processed sly.Label")
+#     set_log_in_widget("Processed sly.Label")
 
-    update_figure(figure_id, sly_label)
+#     update_figure(figure_id, sly_label)
 
-    set_log_in_widget("Updated figure")
+#     set_log_in_widget("Updated figure")
 
 
 def process_label(label: sly.Label) -> sly.Label:
