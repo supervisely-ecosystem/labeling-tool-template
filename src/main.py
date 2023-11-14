@@ -36,7 +36,11 @@ def brush_figure_changed(request: Request):
         sly.logger.info("Option is not fill, skipping")
         return
 
-    if not apply_processing.is_switched():
+    processing_enabled = apply_processing.is_switched()
+    sly.logger.info(f"Processing enabled: {processing_enabled}")
+    sly.logger.info(f"Processing enabled type: {type(processing_enabled)}")
+
+    if not processing_enabled:
         sly.logger.info("Processing is not enabled, skipping")
         return
 
