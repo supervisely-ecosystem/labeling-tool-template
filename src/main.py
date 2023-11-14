@@ -6,13 +6,17 @@ from supervisely.app.widgets import Container, Text
 
 from src.saver import get_figure_by_id
 
-test_text = Text("Hello, World!")
+test_text = Text("No logs yet")
 
 layout = Container(widgets=[test_text])
 
 app = sly.Application(layout=layout)
 
 server = app.get_server()
+
+
+def set_log_in_widget(log: str):
+    test_text.text = log
 
 
 @server.post("/tools_bitmap_brush_figure_changed")
@@ -42,6 +46,7 @@ def figure_changed(request: Request):
     context: Dict[str, Any] = request_state.context
 
     sly.logger.info(f"Figure changed, context: {context}")
+    set_log_in_widget(f"Figure changed, context: {context}")
 
     figure_id = context.get("figureId")
     class_title = context.get("figureClassTitle")
@@ -50,12 +55,18 @@ def figure_changed(request: Request):
     sly.logger.info(
         f"Figure id: {figure_id}, class title: {class_title}, project id: {project_id}"
     )
+    set_log_in_widget(
+        f"Figure id: {figure_id}, class title: {class_title}, project id: {project_id}"
+    )
 
     project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
 
     sly_label = get_figure_by_id(figure_id, class_title, project_meta)
 
     sly.logger.info(
+        f"Type of label: {type(sly_label)} with geometry: {sly_label.geometry.name()}"
+    )
+    set_log_in_widget(
         f"Type of label: {type(sly_label)} with geometry: {sly_label.geometry.name()}"
     )
 
