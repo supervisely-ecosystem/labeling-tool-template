@@ -81,12 +81,12 @@ def update_figure(figure_id: int, label: sly.Label):
     pprint(json_data)
 
     shape = json_data.get("shape")
+    if shape == "bitmap":
+        geometry = json_data.pop(shape)
 
-    geometry = json_data.pop(shape)
-
-    json_data["geometry"] = {
-        shape: geometry,
-    }
+        json_data["geometry"] = {
+            shape: geometry,
+        }
 
     response = requests.put(
         "http://65.108.69.24:8088/public/api/v3/figures.editInfo",
