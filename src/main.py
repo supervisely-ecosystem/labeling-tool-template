@@ -26,7 +26,7 @@ def set_log_in_widget(log: str):
 @server.post("/tools_bitmap_brush_figure_changed")
 def brush_figure_changed(request: Request):
     request_state = request.state
-    api: sly.Api = request_state.api
+    # api: sly.Api = request_state.api
     context: Dict[str, Any] = request_state.context
 
     sly.logger.info(f"Brush changed figure, context: {context}")
@@ -36,7 +36,7 @@ def brush_figure_changed(request: Request):
 
     print(f"Tool state: {tool_state}")
 
-    if tool_state != "fill":
+    if tool_option != "fill":
         return
 
     figure_id = context.get("figureId")
