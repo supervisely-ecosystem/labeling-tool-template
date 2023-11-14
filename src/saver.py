@@ -1,9 +1,6 @@
 import requests
-
-# import os
 import supervisely as sly
 from typing import List, Dict
-import numpy as np
 from pprint import pprint
 
 API_TOKEN = (
@@ -99,10 +96,10 @@ def update_figure(figure_id: int, label: sly.Label):
     print(response.json())
 
 
-def save_label(image_np: np.ndarray, label: sly.Label, save_path: str):
-    image_copy = image_np.copy()
-    label.draw(image_copy)
-    sly.image.write(save_path, image_copy)
+# def save_label(image_np: np.ndarray, label: sly.Label, save_path: str):
+#     image_copy = image_np.copy()
+#     label.draw(image_copy)
+#     sly.image.write(save_path, image_copy)
 
 
 # BEFORE_EDIT_SAVE_PATH = os.path.join(SAVE_DIR, "before_edit.png")

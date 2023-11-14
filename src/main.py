@@ -40,7 +40,8 @@ def brush_figure_changed(request: Request):
         return
 
     figure_id = context.get("figureId")
-    figure = get_figure_by_id(figure_id)
+    sly_label = get_figure_by_id(figure_id)
+    sly_label = process_label(sly_label)
 
 
 @server.post("/manual_selected_figure_changed")
@@ -73,6 +74,11 @@ def figure_changed(request: Request):
     set_log_in_widget(
         f"Type of label: {type(sly_label)} with geometry: {sly_label.geometry.name()}"
     )
+
+
+def process_label(label: sly.Label) -> sly.Label:
+    # Implement your logic here.
+    return label.translate(10, 10)
 
 
 # {
