@@ -1,4 +1,1 @@
-supervisely
-
-# code formatter
-black
+git+https://github.com/supervisely/supervisely.git@image-labels-api

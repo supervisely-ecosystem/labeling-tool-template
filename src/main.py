@@ -4,7 +4,8 @@ from typing import Any, Dict
 
 from supervisely.app.widgets import Container, Switch, Field
 
-from src.saver import get_figure_by_id, update_figure
+# from src.saver import get_figure_by_id, update_figure
+# import src.test as test
 
 process_labels = Switch()
 apply_processing_field = Field(
@@ -55,7 +56,9 @@ def brush_figure_changed(request: Request):
     project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
 
     figure_id = context.get("figureId")
-    sly_label = get_figure_by_id(figure_id, class_title, project_meta)
+    sly_label = api.annotation.get_image_label_by_id(
+        figure_id, class_title, project_meta
+    )
 
     sly.logger.info(f"Retrieved sly.Label by id: {figure_id}")
 
@@ -63,7 +66,7 @@ def brush_figure_changed(request: Request):
 
     sly.logger.info(f"Processed sly.Label with id: {figure_id}")
 
-    update_figure(figure_id, sly_label)
+    api.annotation.update_label(figure_id, sly_label)
 
     sly.logger.info(f"Updated figure with id: {figure_id}")
 
