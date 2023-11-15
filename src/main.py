@@ -7,7 +7,7 @@ from supervisely.app.widgets import Container, Switch, Field
 # from src.saver import get_figure_by_id, update_figure
 # import src.test as test
 
-process_labels = Switch()
+process_labels = Switch(switched=True)
 apply_processing_field = Field(
     title="Process labels",
     description="If turned on, then label will be processed after creating it with bitmap brush tool",
