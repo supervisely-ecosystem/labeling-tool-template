@@ -1,9 +1,10 @@
 import supervisely as sly
 from fastapi import Request
-from typing import Any, Dict
+from typing import Any, Dict, Literal
 
 from supervisely.app.widgets import Container, Switch, Field
 
+# Creating widget to turn on/off the processing of labels.
 process_labels = Switch(switched=True)
 process_labels_field = Field(
     title="Process labels",
@@ -27,45 +28,52 @@ def debug(is_switched):
 def brush_figure_changed(request: Request):
     sly.logger.info("Bitmap brush figure changed")
     request_state = request.state
+
+    # Retrieve API and context from request.
     api: sly.Api = request_state.api
     context: Dict[str, Any] = request_state.context
 
+    # Retrieve tool state and option from context.
     tool_state = context.get("toolState", {})
     tool_option = tool_state.get("option")
 
-    sly.logger.info(f"Tool state: {tool_state}, tool option: {tool_option}")
+    # Tool option represents if the brush or the eraser was used.
+    tool_option: Literal["fill", "erase"]
 
     if tool_option != "fill":
-        sly.logger.info("Option is not fill, skipping")
+        # If the eraser was used, then we don't need to process the label.
         return
 
     if not process_labels.is_switched():
-        sly.logger.info("Processing is not enabled, skipping")
+        # Checking if the processing is turned on in the UI.
         return
 
+    # Retrieving necessary data from context to create sly.Label object.
     class_title = context.get("figureClassTitle")
+    label_id = context.get("figureId")
     project_id = context.get("projectId")
 
-    sly.logger.info(f"Class title: {class_title}, project id: {project_id}")
-
+    # Retrieving project meta to create sly.Label object.
     project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
 
-    figure_id = context.get("figureId")
-    sly_label = api.annotation.get_image_label_by_id(
-        figure_id, class_title, project_meta
-    )
+    # Retrieving sly.Label object from Supervisely API.
+    label = api.annotation.get_image_label_by_id(label_id, class_title, project_meta)
 
-    sly.logger.info(f"Retrieved sly.Label by id: {figure_id}")
+    # Processing the label.
+    # You need to implement your own logic in the process_label function.
+    label = process_label(label)
 
-    sly_label = process_label(sly_label)
-
-    sly.logger.info(f"Processed sly.Label with id: {figure_id}")
-
-    api.annotation.update_label(figure_id, sly_label)
-
-    sly.logger.info(f"Updated figure with id: {figure_id}")
+    # Updating the label in Supervisely API after processing.
+    api.annotation.update_label(label_id, label)
 
 
 def process_label(label: sly.Label) -> sly.Label:
+    """Processing sly.Label object and returning the processed one.
+
+    :param label: sly.Label object to process.
+    :type label: sly.Label
+    :return: Processed sly.Label object.
+    :rtype: sly.Label
+    """
     # Implement your logic here.
     return label.translate(10, 10)
