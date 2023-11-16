@@ -10,16 +10,21 @@ from dotenv import load_dotenv
 
 # Creating widget to turn on/off the processing of labels.
 need_processing = Switch(switched=True)
+processing_field = Field(
+    title="Process labels",
+    description="If turned on, then label will be processed after creating it with bitmap brush tool",
+    content=need_processing,
+)
 
 # Creating widget to set the strength of the processing.
 strength = Slider(value=3, min=1, max=20, step=1)
-field = Field(
-    title="Process labels",
-    description="If turned on, then label will be processed after creating it with bitmap brush tool",
-    content=Container(widgets=[need_processing, strength]),
+strength_field = Field(
+    title="Strength of processing",
+    description="Select the strength of the processing, higher value means bigger label",
+    content=strength,
 )
 
-layout = Container(widgets=[field])
+layout = Container(widgets=[processing_field, strength_field])
 app = sly.Application(layout=layout)
 
 # Enabling advanced debug mode.
