@@ -6,15 +6,24 @@ from supervisely.app.widgets import Container, Switch, Field
 
 # Creating widget to turn on/off the processing of labels.
 process_labels = Switch(switched=True)
-process_labels_field = Field(
+need_process
+
+field = Field(
     title="Process labels",
     description="If turned on, then label will be processed after creating it with bitmap brush tool",
-    content=process_labels,
+    content=need_process,
 )
 
 layout = Container(widgets=[process_labels_field])
 
 app = sly.Application(layout=layout)
+
+project_meta_cache = {}
+def get_annotation_class(project_id):
+    if
+    if
+    dfsf
+    return -> meta
 
 server = app.get_server()
 
@@ -23,8 +32,10 @@ server = app.get_server()
 def debug(is_switched):
     sly.logger.info(f"Processing is now {is_switched}")
 
-
+@app.event(sly.Event.BRUSH_DRAW_LEFT_MOUSE_RELEASE)
 @server.post("/tools_bitmap_brush_figure_changed")
+def brush_figure_changed(api: sly.Api, context: dict, ):
+
 def brush_figure_changed(request: Request):
     sly.logger.info("Bitmap brush figure changed")
     request_state = request.state
@@ -54,10 +65,15 @@ def brush_figure_changed(request: Request):
     project_id = context.get("projectId")
 
     # Retrieving project meta to create sly.Label object.
+    
     project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
 
     # Retrieving sly.Label object from Supervisely API.
     label = api.annotation.get_image_label_by_id(label_id, class_title, project_meta)
+
+    api.annotation.get_label_by_id
+    
+    
 
     # Processing the label.
     # You need to implement your own logic in the process_label function.
