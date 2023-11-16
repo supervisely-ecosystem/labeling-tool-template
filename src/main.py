@@ -1,27 +1,58 @@
 import supervisely as sly
 from fastapi import Request
 from typing import Any, Dict, Literal
+import cv2
+import numpy as np
 
-from supervisely.app.widgets import Container, Switch, Field
+from supervisely.app.widgets import Container, Switch, Field, Slider
 
 # Creating widget to turn on/off the processing of labels.
-process_labels = Switch(switched=True)
-process_labels_field = Field(
+need_processing = Switch(switched=True)
+strength = Slider(value=3, min=1, max=20, step=1)
+field = Field(
     title="Process labels",
     description="If turned on, then label will be processed after creating it with bitmap brush tool",
-    content=process_labels,
+    content=Container(widgets=[need_processing, strength]),
 )
 
-layout = Container(widgets=[process_labels_field])
+layout = Container(widgets=[field])
 
 app = sly.Application(layout=layout)
 
 server = app.get_server()
 
 
-@process_labels.value_changed
-def debug(is_switched):
+team_id = 448
+import supervisely.app.development as sly_app_development
+import os
+from dotenv import load_dotenv
+
+load_dotenv(os.path.expanduser("~/supervisely.env"))
+sly_app_development.supervisely_vpn_network(action="up")
+task = sly_app_development.create_debug_task(team_id, port="8000")
+task_id = task["id"]
+os.environ["TASK_ID"] = str(task_id)
+
+project_metas = {}
+
+
+def get_project_meta(api: sly.Api, project_id: int) -> sly.ProjectMeta:
+    if project_id not in project_metas:
+        project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
+        project_metas[project_id] = project_meta
+    else:
+        project_meta = project_metas[project_id]
+    return project_meta
+
+
+@need_processing.value_changed
+def processing_switched(is_switched):
     sly.logger.info(f"Processing is now {is_switched}")
+
+
+@strength.value_changed
+def strength_changed(value):
+    sly.logger.info(f"Strength is now {value}")
 
 
 @server.post("/tools_bitmap_brush_figure_changed")
@@ -44,20 +75,19 @@ def brush_figure_changed(request: Request):
         # If the eraser was used, then we don't need to process the label.
         return
 
-    if not process_labels.is_switched():
+    if not need_processing.is_switched():
         # Checking if the processing is turned on in the UI.
         return
 
     # Retrieving necessary data from context to create sly.Label object.
-    class_title = context.get("figureClassTitle")
     label_id = context.get("figureId")
     project_id = context.get("projectId")
 
     # Retrieving project meta to create sly.Label object.
-    project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
+    project_meta = get_project_meta(api, project_id)
 
     # Retrieving sly.Label object from Supervisely API.
-    label = api.annotation.get_image_label_by_id(label_id, class_title, project_meta)
+    label = api.annotation.get_label_by_id(label_id, project_meta)
 
     # Processing the label.
     # You need to implement your own logic in the process_label function.
@@ -76,4 +106,12 @@ def process_label(label: sly.Label) -> sly.Label:
     :rtype: sly.Label
     """
     # Implement your logic here.
-    return label.translate(10, 10)
+    dilation_strength = strength.get_value()
+    dilation = cv2.dilate(
+        label.geometry.data.astype(np.uint8), None, iterations=dilation_strength
+    )
+
+    # Return a new label with the processed data
+    return label.clone(
+        geometry=sly.Bitmap(data=dilation.astype(bool), origin=label.geometry.origin)
+    )
