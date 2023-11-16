@@ -1,13 +1,18 @@
+import cv2
+import os
 import supervisely as sly
+import supervisely.app.development as sly_app_development
+from supervisely.app.widgets import Container, Switch, Field, Slider
 from fastapi import Request
 from typing import Any, Dict, Literal
-import cv2
 import numpy as np
+from dotenv import load_dotenv
 
-from supervisely.app.widgets import Container, Switch, Field, Slider
 
 # Creating widget to turn on/off the processing of labels.
 need_processing = Switch(switched=True)
+
+# Creating widget to set the strength of the processing.
 strength = Slider(value=3, min=1, max=20, step=1)
 field = Field(
     title="Process labels",
@@ -16,27 +21,30 @@ field = Field(
 )
 
 layout = Container(widgets=[field])
-
 app = sly.Application(layout=layout)
-
 server = app.get_server()
 
-
+# Enabling advanced debug mode.
+# Learn more: https://developer.supervisely.com/app-development/advanced/advanced-debugging
 team_id = 448
-import supervisely.app.development as sly_app_development
-import os
-from dotenv import load_dotenv
-
 load_dotenv(os.path.expanduser("~/supervisely.env"))
 sly_app_development.supervisely_vpn_network(action="up")
-task = sly_app_development.create_debug_task(team_id, port="8000")
-task_id = task["id"]
-os.environ["TASK_ID"] = str(task_id)
+sly_app_development.create_debug_task(team_id, port="8000")
 
+# Creating cache for project meta.
 project_metas = {}
 
 
 def get_project_meta(api: sly.Api, project_id: int) -> sly.ProjectMeta:
+    """Retrieving project meta: if cached, then return from cache, else retrieve from Supervisely API.
+
+    :param api: Supervisely API object.
+    :type api: sly.Api
+    :param project_id: Project ID.
+    :type project_id: int
+    :return: Project meta of the project with the given ID.
+    :rtype: sly.ProjectMeta
+    """
     if project_id not in project_metas:
         project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
         project_metas[project_id] = project_meta
