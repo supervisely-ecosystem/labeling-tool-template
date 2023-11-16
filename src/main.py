@@ -3,7 +3,6 @@ import os
 import supervisely as sly
 import supervisely.app.development as sly_app_development
 from supervisely.app.widgets import Container, Switch, Field, Slider
-from fastapi import Request
 from typing import Any, Dict, Literal
 import numpy as np
 from dotenv import load_dotenv
@@ -22,7 +21,6 @@ field = Field(
 
 layout = Container(widgets=[field])
 app = sly.Application(layout=layout)
-server = app.get_server()
 
 # Enabling advanced debug mode.
 # Learn more: https://developer.supervisely.com/app-development/advanced/advanced-debugging
@@ -63,14 +61,9 @@ def strength_changed(value):
     sly.logger.info(f"Strength is now {value}")
 
 
-@server.post("/tools_bitmap_brush_figure_changed")
-def brush_figure_changed(request: Request):
+@app.event(sly.Events.BRUSH_DRAW_LEFT_MOUSE_RELEASE)
+def brush_figure_changed(api: sly.Api, context: Dict[str, Any]):
     sly.logger.info("Bitmap brush figure changed")
-    request_state = request.state
-
-    # Retrieve API and context from request.
-    api: sly.Api = request_state.api
-    context: Dict[str, Any] = request_state.context
 
     # Retrieve tool state and option from context.
     tool_state = context.get("toolState", {})
