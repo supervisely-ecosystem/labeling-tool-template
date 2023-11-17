@@ -11,16 +11,16 @@ from dotenv import load_dotenv
 # Creating widget to turn on/off the processing of labels.
 need_processing = Switch(switched=True)
 processing_field = Field(
-    title="Process labels",
-    description="If turned on, then label will be processed after creating it with bitmap brush tool",
+    title="Process masks",
+    description="If turned on, then the mask will be processed after every change on left mouse release after drawing",
     content=need_processing,
 )
 
 # Creating widget to set the strength of the processing.
 strength = Slider(value=3, min=1, max=20, step=1)
 strength_field = Field(
-    title="Strength of processing",
-    description="Select the strength of the processing, higher value means bigger label",
+    title="Dilation",
+    description="Select the strength of the dilation operation",
     content=strength,
 )
 
@@ -28,14 +28,17 @@ layout = Container(widgets=[processing_field, strength_field])
 app = sly.Application(layout=layout)
 
 # Enabling advanced debug mode.
-# Learn more: https://developer.supervisely.com/app-development/advanced/advanced-debugging
-team_id = 448
-load_dotenv(os.path.expanduser("~/supervisely.env"))
-sly_app_development.supervisely_vpn_network(action="up")
-sly_app_development.create_debug_task(team_id, port="8000")
+# ! (updated docs) Learn more: https://developer.supervisely.com/app-development/advanced/advanced-debugging
+if sly.is_developemnt():
+    load_dotenv("local.env")
+    team_id = sly.env.team_id()
+    load_dotenv(os.path.expanduser("~/supervisely.env"))
+    sly_app_development.supervisely_vpn_network(action="up")
+    sly_app_development.create_debug_task(team_id, port="8000")
 
 # Creating cache for project meta.
 project_metas = {}
+image_nps = {}
 
 
 def get_project_meta(api: sly.Api, project_id: int) -> sly.ProjectMeta:
@@ -54,6 +57,24 @@ def get_project_meta(api: sly.Api, project_id: int) -> sly.ProjectMeta:
     else:
         project_meta = project_metas[project_id]
     return project_meta
+
+
+def get_image_np(api: sly.Api, image_id: int) -> np.ndarray:
+    """Retrieving image numpy array: if cached, then return from cache, else retrieve from Supervisely API.
+
+    :param api: Supervisely API object.
+    :type api: sly.Api
+    :param image_id: Image ID for which to retrieve numpy array.
+    :type image_id: int
+    :return: Image numpy array.
+    :rtype: np.ndarray
+    """
+    if image_id not in image_nps:
+        image_np = api.image.download_np(image_id)
+        image_nps[image_id] = image_np
+    else:
+        image_np = image_nps[image_id]
+    return image_np
 
 
 @need_processing.value_changed
@@ -81,7 +102,7 @@ def brush_figure_changed(api: sly.Api, context: Dict[str, Any]):
         # If the eraser was used, then we don't need to process the label.
         return
 
-    if not need_processing.is_switched():
+    if not need_processing.is_on():
         # Checking if the processing is turned on in the UI.
         return
 
@@ -97,10 +118,10 @@ def brush_figure_changed(api: sly.Api, context: Dict[str, Any]):
 
     # Processing the label.
     # You need to implement your own logic in the process_label function.
-    label = process_label(label)
+    new_label = process_label(label)
 
     # Updating the label in Supervisely API after processing.
-    api.annotation.update_label(label_id, label)
+    api.annotation.update_label(label_id, new_label)
 
 
 def process_label(label: sly.Label) -> sly.Label:
@@ -113,9 +134,7 @@ def process_label(label: sly.Label) -> sly.Label:
     """
     # Implement your logic here.
     dilation_strength = strength.get_value()
-    dilation = cv2.dilate(
-        label.geometry.data.astype(np.uint8), None, iterations=dilation_strength
-    )
+    dilation = cv2.dilate(label.geometry.data.astype(np.uint8), None, iterations=dilation_strength)
 
     # Return a new label with the processed data
     return label.clone(

@@ -12,6 +12,10 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+    "black-formatter.args": [
+      "--line-length",
+      "100"
+  ],
   "python.formatting.provider": "black",
   "debug.inlineValues": "off",
 }
