@@ -17,7 +17,7 @@ processing_field = Field(
 )
 
 # Creating widget to set the strength of the processing.
-strength = Slider(value=3, min=1, max=20, step=1)
+strength = Slider(value=10, min=1, max=50, step=1)
 strength_field = Field(
     title="Dilation",
     description="Select the strength of the dilation operation",
@@ -39,52 +39,6 @@ if sly.is_development():
 # Creating cache for project meta.
 project_metas = {}
 image_nps = {}
-
-
-def get_project_meta(api: sly.Api, project_id: int) -> sly.ProjectMeta:
-    """Retrieving project meta: if cached, then return from cache, else retrieve from Supervisely API.
-
-    :param api: Supervisely API object.
-    :type api: sly.Api
-    :param project_id: Project ID.
-    :type project_id: int
-    :return: Project meta of the project with the given ID.
-    :rtype: sly.ProjectMeta
-    """
-    if project_id not in project_metas:
-        project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
-        project_metas[project_id] = project_meta
-    else:
-        project_meta = project_metas[project_id]
-    return project_meta
-
-
-def get_image_np(api: sly.Api, image_id: int) -> np.ndarray:
-    """Retrieving image numpy array: if cached, then return from cache, else retrieve from Supervisely API.
-
-    :param api: Supervisely API object.
-    :type api: sly.Api
-    :param image_id: Image ID for which to retrieve numpy array.
-    :type image_id: int
-    :return: Image numpy array.
-    :rtype: np.ndarray
-    """
-    if image_id not in image_nps:
-        image_np = api.image.download_np(image_id)
-        image_nps[image_id] = image_np
-    else:
-        image_np = image_nps[image_id]
-    return image_np
-
-
-@need_processing.value_changed
-def processing_switched(is_switched):
-    sly.logger.info(f"Processing is now {is_switched}")
-
-
-@strength.value_changed
-def strength_changed(value):
-    sly.logger.info(f"Strength is now {value}")
 
 
 @app.event(sly.Events.BRUSH_DRAW_LEFT_MOUSE_RELEASE)
@@ -177,3 +131,49 @@ def get_full_image_mask(
         col : col + mask.shape[1],
     ] = mask
     return new_mask
+
+
+def get_project_meta(api: sly.Api, project_id: int) -> sly.ProjectMeta:
+    """Retrieving project meta: if cached, then return from cache, else retrieve from Supervisely API.
+
+    :param api: Supervisely API object.
+    :type api: sly.Api
+    :param project_id: Project ID.
+    :type project_id: int
+    :return: Project meta of the project with the given ID.
+    :rtype: sly.ProjectMeta
+    """
+    if project_id not in project_metas:
+        project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
+        project_metas[project_id] = project_meta
+    else:
+        project_meta = project_metas[project_id]
+    return project_meta
+
+
+def get_image_np(api: sly.Api, image_id: int) -> np.ndarray:
+    """Retrieving image numpy array: if cached, then return from cache, else retrieve from Supervisely API.
+
+    :param api: Supervisely API object.
+    :type api: sly.Api
+    :param image_id: Image ID for which to retrieve numpy array.
+    :type image_id: int
+    :return: Image numpy array.
+    :rtype: np.ndarray
+    """
+    if image_id not in image_nps:
+        image_np = api.image.download_np(image_id)
+        image_nps[image_id] = image_np
+    else:
+        image_np = image_nps[image_id]
+    return image_np
+
+
+@need_processing.value_changed
+def processing_switched(is_switched):
+    sly.logger.info(f"Processing is now {is_switched}")
+
+
+@strength.value_changed
+def strength_changed(value):
+    sly.logger.info(f"Strength is now {value}")
