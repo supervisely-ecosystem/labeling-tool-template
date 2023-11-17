@@ -3,7 +3,6 @@ import os
 import supervisely as sly
 import supervisely.app.development as sly_app_development
 from supervisely.app.widgets import Container, Switch, Field, Slider
-from supervisely.app.fastapi.subapp import Context
 from typing import Literal, Tuple
 import numpy as np
 from dotenv import load_dotenv
@@ -43,7 +42,7 @@ image_nps = {}
 
 
 @app.event(sly.Events.BRUSH_DRAW_LEFT_MOUSE_RELEASE)
-def brush_figure_changed(api: sly.Api, context: Context):
+def brush_figure_changed(api: sly.Api, context: sly.Context):
     sly.logger.info("Bitmap brush figure changed")
     if not need_processing.is_on():
         # Checking if the processing is turned on in the UI.
