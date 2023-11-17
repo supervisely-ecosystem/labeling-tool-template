@@ -3,7 +3,8 @@ import os
 import supervisely as sly
 import supervisely.app.development as sly_app_development
 from supervisely.app.widgets import Container, Switch, Field, Slider
-from typing import Any, Dict, Literal, Tuple
+from supervisely.app.fastapi.subapp import Context
+from typing import Literal, Tuple
 import numpy as np
 from dotenv import load_dotenv
 
@@ -42,17 +43,15 @@ image_nps = {}
 
 
 @app.event(sly.Events.BRUSH_DRAW_LEFT_MOUSE_RELEASE)
-def brush_figure_changed(api: sly.Api, context: Dict[str, Any]):
+def brush_figure_changed(api: sly.Api, context: Context):
     sly.logger.info("Bitmap brush figure changed")
     if not need_processing.is_on():
         # Checking if the processing is turned on in the UI.
         return
 
-    # Retrieve tool state and option from context.
-    tool_state = context.get("toolState", {})
-    tool_option = tool_state.get("option")
-
+    # Retrieve option from context.
     # Tool option represents if the brush or the eraser was used.
+    tool_option = context.tool_option
     tool_option: Literal["fill", "erase"]
 
     if tool_option != "fill":
@@ -60,23 +59,25 @@ def brush_figure_changed(api: sly.Api, context: Dict[str, Any]):
         return
 
     # Retrieving necessary data from context to create sly.Label object.
-    label_id = context.get("figureId")
-    project_id = context.get("projectId")
-    image_id = context.get("imageId")
+    object_id = context.object_id
+    project_id = context.project_id
+    image_id = context.image_id
 
     # Retrieving project meta to create sly.Label object.
     project_meta = get_project_meta(api, project_id)
+
+    # Retrieving image numpy array to process the label.
     image_np = get_image_np(api, image_id)
 
     # Retrieving sly.Label object from Supervisely API.
-    label = api.annotation.get_label_by_id(label_id, project_meta)
+    label = api.annotation.get_label_by_id(object_id, project_meta)
 
     # Processing the label.
     # You need to implement your own logic in the process_label function.
     new_label = process_label(label, image_np)
 
     # Updating the label in Supervisely API after processing.
-    api.annotation.update_label(label_id, new_label)
+    api.annotation.update_label(object_id, new_label)
 
 
 def process_label(label: sly.Label, image_np: np.ndarray) -> sly.Label:
