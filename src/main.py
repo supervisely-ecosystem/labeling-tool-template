@@ -3,7 +3,7 @@ import os
 import supervisely as sly
 import supervisely.app.development as sly_app_development
 from supervisely.app.widgets import Container, Switch, Field, Slider
-from typing import Any, Dict, Literal
+from typing import Any, Dict, Literal, Tuple
 import numpy as np
 from dotenv import load_dotenv
 
@@ -29,7 +29,7 @@ app = sly.Application(layout=layout)
 
 # Enabling advanced debug mode.
 # ! (updated docs) Learn more: https://developer.supervisely.com/app-development/advanced/advanced-debugging
-if sly.is_developemnt():
+if sly.is_development():
     load_dotenv("local.env")
     team_id = sly.env.team_id()
     load_dotenv(os.path.expanduser("~/supervisely.env"))
@@ -90,6 +90,9 @@ def strength_changed(value):
 @app.event(sly.Events.BRUSH_DRAW_LEFT_MOUSE_RELEASE)
 def brush_figure_changed(api: sly.Api, context: Dict[str, Any]):
     sly.logger.info("Bitmap brush figure changed")
+    if not need_processing.is_on():
+        # Checking if the processing is turned on in the UI.
+        return
 
     # Retrieve tool state and option from context.
     tool_state = context.get("toolState", {})
@@ -102,41 +105,75 @@ def brush_figure_changed(api: sly.Api, context: Dict[str, Any]):
         # If the eraser was used, then we don't need to process the label.
         return
 
-    if not need_processing.is_on():
-        # Checking if the processing is turned on in the UI.
-        return
-
     # Retrieving necessary data from context to create sly.Label object.
     label_id = context.get("figureId")
     project_id = context.get("projectId")
+    image_id = context.get("imageId")
 
     # Retrieving project meta to create sly.Label object.
     project_meta = get_project_meta(api, project_id)
+    image_np = get_image_np(api, image_id)
 
     # Retrieving sly.Label object from Supervisely API.
     label = api.annotation.get_label_by_id(label_id, project_meta)
 
     # Processing the label.
     # You need to implement your own logic in the process_label function.
-    new_label = process_label(label)
+    new_label = process_label(label, image_np)
 
     # Updating the label in Supervisely API after processing.
     api.annotation.update_label(label_id, new_label)
 
 
-def process_label(label: sly.Label) -> sly.Label:
+def process_label(label: sly.Label, image_np: np.ndarray) -> sly.Label:
     """Processing sly.Label object and returning the processed one.
 
     :param label: sly.Label object to process.
     :type label: sly.Label
+    :param image_np: Image numpy array.
+    :type image_np: np.ndarray
     :return: Processed sly.Label object.
     :rtype: sly.Label
     """
-    # Implement your logic here.
-    dilation_strength = strength.get_value()
-    dilation = cv2.dilate(label.geometry.data.astype(np.uint8), None, iterations=dilation_strength)
+    # Retrieving image size from numpy array to create a full image size mask.
+    image_height, image_width = image_np.shape[:2]
 
-    # Return a new label with the processed data
-    return label.clone(
-        geometry=sly.Bitmap(data=dilation.astype(bool), origin=label.geometry.origin)
+    # Creating a full image size mask from the label mask.
+    mask = get_full_image_mask(
+        (image_height, image_width),
+        label.geometry.data.astype(np.uint8),
+        label.geometry.origin.row,
+        label.geometry.origin.col,
     )
+
+    # Reading the strength of the dilation operation from the UI
+    # and applying it to the mask.
+    dilation_strength = strength.get_value()
+    dilation = cv2.dilate(mask, None, iterations=dilation_strength)
+
+    # Returning a new label with the processed data
+    return label.clone(geometry=sly.Bitmap(data=dilation.astype(bool)))
+
+
+def get_full_image_mask(
+    image_size: Tuple[int, int], mask: np.ndarray, row: int, col: int
+) -> np.ndarray:
+    """Creating a full image size mask from the mask with origin.
+
+    :param image_size: Image size in pixels (height, width)
+    :type image_size: Tuple[int, int]
+    :param mask_with_origin: Mask with origin.
+    :type mask_with_origin: np.ndarray
+    :param row: Origin row.
+    :type row: int
+    :param col: Origin column.
+    :type col: int
+    :return: Full image size mask.
+    :rtype: np.ndarray
+    """
+    new_mask = np.zeros((image_size), dtype=np.uint8)
+    new_mask[
+        row : row + mask.shape[0],
+        col : col + mask.shape[1],
+    ] = mask
+    return new_mask
