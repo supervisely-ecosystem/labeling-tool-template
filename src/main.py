@@ -36,7 +36,7 @@ if sly.is_development():
     sly_app_development.supervisely_vpn_network(action="up")
     sly_app_development.create_debug_task(team_id, port="8000")
 
-# Creating cache for project meta.
+# Creating cache for project meta and images as numpy arrays.
 project_metas = {}
 image_nps = {}
 
