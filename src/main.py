@@ -89,6 +89,9 @@ def process_label(label: sly.Label, image_np: np.ndarray) -> sly.Label:
     :return: Processed sly.Label object.
     :rtype: sly.Label
     """
+    # In this tutorial we'll be working with masks, but you can implement your own
+    # logic to edit the label (e.g. work with geometry, tags).
+
     # Retrieving image size from numpy array to create a full image size mask.
     image_height, image_width = image_np.shape[:2]
 
@@ -105,7 +108,7 @@ def process_label(label: sly.Label, image_np: np.ndarray) -> sly.Label:
     dilation_strength = strength.get_value()
     dilation = cv2.dilate(mask, None, iterations=dilation_strength)
 
-    # Returning a new label with the processed data
+    # Returning a new label with the processed data.
     return label.clone(geometry=sly.Bitmap(data=dilation.astype(bool)))
 
 
