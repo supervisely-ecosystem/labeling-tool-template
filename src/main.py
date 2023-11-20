@@ -49,23 +49,23 @@ def brush_figure_changed(api: sly.Api, event: sly.Events.Brush.DrawLeftMouseRele
         return
 
     if event.is_erase:
-        # If the eraser was used, then we don't need to process the label.
+        # If the eraser was used, then we don't need to process the label in this tutorial.
         return
 
-    # Retrieving project meta to create sly.Label object.
+    # Get project meta (using simple cache) to create sly.Label object.
     project_meta = get_project_meta(api, event.project_id)
 
-    # Retrieving image numpy array to process the label.
+    # Get image numpy array (using simple cache) to process the label.
     image_np = get_image_np(api, event.image_id)
 
-    # Retrieving sly.Label object from Supervisely API.
+    # Get sly.Label object with actual mask from Supervisely API.
     label = api.annotation.get_label_by_id(event.label_id, project_meta)
 
     # Processing the label.
     # You need to implement your own logic in the process_label function.
     new_label = process(label, image_np)
 
-    # Updating the label in Supervisely API after processing.
+    # Upload the label with the updated mask to SLY platform.
     api.annotation.update_label(event.label_id, new_label)
 
 
@@ -85,7 +85,10 @@ def process(label: sly.Label, image_np: np.ndarray) -> sly.Label:
     # Retrieving image size from numpy array to create a full image size mask.
     image_height, image_width = image_np.shape[:2]
 
-    # Creating a full image size mask from the label mask.
+    # Object mask is stored in optimized form, let's unpack it
+    mask = label.get_mask(img_size)
+    # label.geometry.get_mask(img_size)
+    
     mask = get_full_image_mask(
         (image_height, image_width),
         label.geometry.data.astype(np.uint8),
