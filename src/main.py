@@ -3,7 +3,7 @@ import os
 import supervisely as sly
 import supervisely.app.development as sly_app_development
 from supervisely.app.widgets import Container, Switch, Field, Slider
-from typing import Literal, Tuple
+from typing import Tuple
 import numpy as np
 from dotenv import load_dotenv
 
@@ -17,14 +17,14 @@ processing_field = Field(
 )
 
 # Creating widget to set the strength of the processing.
-strength = Slider(value=10, min=1, max=50, step=1)
-strength_field = Field(
+deliation_strength = Slider(value=10, min=1, max=50, step=1)
+deliation_strength_field = Field(
     title="Dilation",
     description="Select the strength of the dilation operation",
-    content=strength,
+    content=deliation_strength,
 )
 
-layout = Container(widgets=[processing_field, strength_field])
+layout = Container(widgets=[processing_field, deliation_strength_field])
 app = sly.Application(layout=layout)
 
 # Enabling advanced debug mode.
@@ -38,48 +38,38 @@ if sly.is_development():
 
 # Creating cache for project meta and images as numpy arrays.
 project_metas = {}
-image_nps = {}
+images_cache = {}
 
 
-@app.event(sly.Events.BRUSH_DRAW_LEFT_MOUSE_RELEASE)
-def brush_figure_changed(api: sly.Api, context: sly.Context):
+@app.event(sly.Events.Brush.LeftMouseReleased)
+def brush_figure_changed(api: sly.Api, event: sly.Events.Brush.LeftMouseReleased):
     sly.logger.info("Bitmap brush figure changed")
     if not need_processing.is_on():
         # Checking if the processing is turned on in the UI.
         return
 
-    # Retrieve option from context.
-    # Tool option represents if the brush or the eraser was used.
-    tool_option = context.tool_option
-    tool_option: Literal["fill", "erase"]
-
-    if tool_option != "fill":
+    if event.is_erase:
         # If the eraser was used, then we don't need to process the label.
         return
 
-    # Retrieving necessary data from context to create sly.Label object.
-    object_id = context.object_id
-    project_id = context.project_id
-    image_id = context.image_id
-
     # Retrieving project meta to create sly.Label object.
-    project_meta = get_project_meta(api, project_id)
+    project_meta = get_project_meta(api, event.project_id)
 
     # Retrieving image numpy array to process the label.
-    image_np = get_image_np(api, image_id)
+    image_np = get_image_np(api, event.image_id)
 
     # Retrieving sly.Label object from Supervisely API.
-    label = api.annotation.get_label_by_id(object_id, project_meta)
+    label = api.annotation.get_label_by_id(event.label_id, project_meta)
 
     # Processing the label.
     # You need to implement your own logic in the process_label function.
-    new_label = process_label(label, image_np)
+    new_label = process(label, image_np)
 
     # Updating the label in Supervisely API after processing.
-    api.annotation.update_label(object_id, new_label)
+    api.annotation.update_label(event.label_id, new_label)
 
 
-def process_label(label: sly.Label, image_np: np.ndarray) -> sly.Label:
+def process(label: sly.Label, image_np: np.ndarray) -> sly.Label:
     """Processing sly.Label object and returning the processed one.
 
     :param label: sly.Label object to process.
@@ -105,7 +95,7 @@ def process_label(label: sly.Label, image_np: np.ndarray) -> sly.Label:
 
     # Reading the strength of the dilation operation from the UI
     # and applying it to the mask.
-    dilation_strength = strength.get_value()
+    dilation_strength = deliation_strength.get_value()
     dilation = cv2.dilate(mask, None, iterations=dilation_strength)
 
     # Returning a new label with the processed data.
@@ -164,19 +154,22 @@ def get_image_np(api: sly.Api, image_id: int) -> np.ndarray:
     :return: Image numpy array.
     :rtype: np.ndarray
     """
-    if image_id not in image_nps:
+    if len(images_cache) > 100:
+        # Clearing the cache if it's too big.
+        images_cache.clear()
+    if image_id not in images_cache:
         image_np = api.image.download_np(image_id)
-        image_nps[image_id] = image_np
+        images_cache[image_id] = image_np
     else:
-        image_np = image_nps[image_id]
+        image_np = images_cache[image_id]
     return image_np
 
 
 @need_processing.value_changed
 def processing_switched(is_switched):
-    sly.logger.info(f"Processing is now {is_switched}")
+    sly.logger.debug(f"Processing is now {is_switched}")
 
 
-@strength.value_changed
+@deliation_strength.value_changed
 def strength_changed(value):
-    sly.logger.info(f"Strength is now {value}")
+    sly.logger.debug(f"Strength is now {value}")
