@@ -17,14 +17,14 @@ processing_field = Field(
 )
 
 # Creating widget to set the strength of the processing.
-deliation_strength = Slider(value=10, min=1, max=50, step=1)
-deliation_strength_field = Field(
+dilation_strength = Slider(value=10, min=1, max=50, step=1)
+dilation_strength_field = Field(
     title="Dilation",
     description="Select the strength of the dilation operation",
-    content=deliation_strength,
+    content=dilation_strength,
 )
 
-layout = Container(widgets=[processing_field, deliation_strength_field])
+layout = Container(widgets=[processing_field, dilation_strength_field])
 app = sly.Application(layout=layout)
 
 # Enabling advanced debug mode.
@@ -95,8 +95,7 @@ def process(label: sly.Label, image_np: np.ndarray) -> sly.Label:
 
     # Reading the strength of the dilation operation from the UI
     # and applying it to the mask.
-    dilation_strength = deliation_strength.get_value()
-    dilation = cv2.dilate(mask, None, iterations=dilation_strength)
+    dilation = cv2.dilate(mask, None, iterations=dilation_strength.get_value())
 
     # Returning a new label with the processed data.
     return label.clone(geometry=sly.Bitmap(data=dilation.astype(bool)))
@@ -170,6 +169,6 @@ def processing_switched(is_switched):
     sly.logger.debug(f"Processing is now {is_switched}")
 
 
-@deliation_strength.value_changed
+@dilation_strength.value_changed
 def strength_changed(value):
     sly.logger.debug(f"Strength is now {value}")
