@@ -92,7 +92,7 @@ def process(label: sly.Label, image_np: np.ndarray) -> sly.Label:
     dilation = cv2.dilate(mask, None, iterations=dilation_strength.get_value())
 
     # Returning a new label with the processed data.
-    return label.clone(geometry=sly.Bitmap(data=dilation.astype(bool)[:, :, 0]))
+    return label.clone(geometry=sly.Bitmap(data=dilation.astype(bool)))
 
 
 def get_project_meta(api: sly.Api, project_id: int) -> sly.ProjectMeta:
