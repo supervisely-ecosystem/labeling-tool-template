@@ -83,18 +83,10 @@ def process(label: sly.Label, image_np: np.ndarray) -> sly.Label:
     # logic to edit the label (e.g. work with geometry, tags).
 
     # Retrieving image size from numpy array to create a full image size mask.
-    image_height, image_width = image_np.shape[:2]
+    image_size = image_np.shape[:2]
 
-    # Object mask is stored in optimized form, let's unpack it
-    mask = label.get_mask(img_size)
-    # label.geometry.get_mask(img_size)
-    
-    mask = get_full_image_mask(
-        (image_height, image_width),
-        label.geometry.data.astype(np.uint8),
-        label.geometry.origin.row,
-        label.geometry.origin.col,
-    )
+    # Object mask is stored in optimized form, let's unpack it.
+    mask = label.get_mask(image_size)
 
     # Reading the strength of the dilation operation from the UI
     # and applying it to the mask.
@@ -102,30 +94,6 @@ def process(label: sly.Label, image_np: np.ndarray) -> sly.Label:
 
     # Returning a new label with the processed data.
     return label.clone(geometry=sly.Bitmap(data=dilation.astype(bool)))
-
-
-def get_full_image_mask(
-    image_size: Tuple[int, int], mask: np.ndarray, row: int, col: int
-) -> np.ndarray:
-    """Creating a full image size mask from the mask with origin.
-
-    :param image_size: Image size in pixels (height, width)
-    :type image_size: Tuple[int, int]
-    :param mask_with_origin: Mask with origin.
-    :type mask_with_origin: np.ndarray
-    :param row: Origin row.
-    :type row: int
-    :param col: Origin column.
-    :type col: int
-    :return: Full image size mask.
-    :rtype: np.ndarray
-    """
-    new_mask = np.zeros((image_size), dtype=np.uint8)
-    new_mask[
-        row : row + mask.shape[0],
-        col : col + mask.shape[1],
-    ] = mask
-    return new_mask
 
 
 def get_project_meta(api: sly.Api, project_id: int) -> sly.ProjectMeta:
