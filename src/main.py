@@ -43,7 +43,7 @@ images_cache = {}
 
 @app.event(sly.Events.Brush.DrawLeftMouseReleased)
 def brush_figure_changed(api: sly.Api, event: sly.Events.Brush.DrawLeftMouseReleased):
-    sly.logger.info("Bitmap brush figure changed")
+    sly.logger.info("Left mouse button released after drawing mask with brush")
     if not need_processing.is_on():
         # Checking if the processing is turned on in the UI.
         return
