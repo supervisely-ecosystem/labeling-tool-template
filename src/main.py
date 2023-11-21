@@ -64,7 +64,7 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
     # You need to implement your own logic in the process_label function.
     new_label = process(label, image_np)
 
-    # Upload the label with the updated mask to SLY platform.
+    # Upload the label with the updated mask to Supervisely platform.
     api.annotation.update_label(event.label_id, new_label)
 
 
