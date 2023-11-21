@@ -1,8 +1,8 @@
 {
   "type": "app",
   "version": "2.0.0",
-  "name": "LabelingTool template",
-  "description": "LabelingTool template",
+  "name": "Labeling Tool template",
+  "description": "Labeling Tool template",
   "docker_image": "supervisely/base-py-sdk:latest",
   "instance_version": "6.7.33",
   "categories": ["images", "labeling"],
