@@ -6,6 +6,7 @@ from supervisely.app.widgets import Container, Switch, Field, Slider
 import numpy as np
 from dotenv import load_dotenv
 
+global_timestamp = None # [user_id] -> tm
 
 # Creating widget to turn on/off the processing of labels.
 need_processing = Switch(switched=True)
@@ -42,6 +43,9 @@ images_cache = {}
 
 @app.event(sly.Event.Brush.DrawLeftMouseReleased)
 def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouseReleased):
+    t = 77# current timesatamop
+    global_timestamp = t
+    
     sly.logger.info("Left mouse button released after drawing mask with brush")
     if not need_processing.is_on():
         # Checking if the processing is turned on in the UI.
@@ -65,7 +69,8 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
     new_label = process(label, image_np)
 
     # Upload the label with the updated mask to Supervisely platform.
-    api.annotation.update_label(event.label_id, new_label)
+    if t == global_timestamp:
+        api.annotation.update_label(event.label_id, new_label)
 
 
 def process(label: sly.Label, image_np: np.ndarray) -> sly.Label:
