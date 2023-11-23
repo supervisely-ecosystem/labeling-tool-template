@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "name": "Labeling Tool template",
   "description": "Labeling Tool template",
-  "docker_image": "supervisely/base-py-sdk:latest",
+  "docker_image": "supervisely/base-py-sdk:6.72.190",
   "instance_version": "6.7.33",
   "categories": ["images", "labeling"],
   "task_location": "application_sessions",
