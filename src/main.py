@@ -54,6 +54,9 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
         # If the eraser was used, then we don't need to process the label in this tutorial.
         return
 
+    if event.geometry_type != "bitmap":
+        return
+
     processing_text.show()
 
     # Get project meta (using simple cache) to create sly.Label object.
@@ -63,7 +66,7 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
     image_np = get_image_np(api, event.image_id)
 
     # Get sly.Label object with actual mask from Supervisely API.
-    label = get_label(project_meta, event.geometry_type, event.geometry, event.object_class_title)
+    label = sly.Label(geometry=sly.Bitmap(data=event.geometry["data"]), project_meta=project_meta)
 
     # Processing the label.
     # You need to implement your own logic in the process_label function.
@@ -75,20 +78,20 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
     processing_text.hide()
 
 
-def get_label(
-    project_meta: sly.ProjectMeta, geometry_type: str, geometry: Dict[str, Any], class_title: str
-) -> sly.Label:
-    data = {
-        "geometryType": geometry_type,
-        "classTitle": class_title,
-        "tags": [],
-    }
+# def get_label(
+#     project_meta: sly.ProjectMeta, geometry_type: str, geometry: Dict[str, Any], class_title: str
+# ) -> sly.Label:
+#     data = {
+#         "geometryType": geometry_type,
+#         "classTitle": class_title,
+#         "tags": [],
+#     }
 
-    data.update(geometry)
+#     data.update(geometry)
 
-    print(data)
+#     print(data)
 
-    return sly.Label.from_json(data, project_meta)
+#     return sly.Label.from_json(data, project_meta)
 
 
 def process(label: sly.Label, image_np: np.ndarray) -> sly.Label:
