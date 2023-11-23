@@ -2,7 +2,7 @@ import cv2
 import os
 import supervisely as sly
 import supervisely.app.development as sly_app_development
-from supervisely.app.widgets import Container, Switch, Field, Slider
+from supervisely.app.widgets import Container, Switch, Field, Slider, Text
 import numpy as np
 from dotenv import load_dotenv
 
@@ -23,11 +23,13 @@ dilation_strength_field = Field(
     content=dilation_strength,
 )
 
-layout = Container(widgets=[processing_field, dilation_strength_field])
+processing_text = Text("Processing mask...", status="info")
+processing_text.hide()
+
+layout = Container(widgets=[processing_text, processing_field, dilation_strength_field])
 app = sly.Application(layout=layout)
 
 # Enabling advanced debug mode.
-# ! (updated docs) Learn more: https://developer.supervisely.com/app-development/advanced/advanced-debugging
 if sly.is_development():
     load_dotenv("local.env")
     team_id = sly.env.team_id()
@@ -51,6 +53,8 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
         # If the eraser was used, then we don't need to process the label in this tutorial.
         return
 
+    processing_text.show()
+
     # Get project meta (using simple cache) to create sly.Label object.
     project_meta = get_project_meta(api, event.project_id)
 
@@ -66,6 +70,8 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
 
     # Upload the label with the updated mask to Supervisely platform.
     api.annotation.update_label(event.label_id, new_label)
+
+    processing_text.hide()
 
 
 def process(label: sly.Label, image_np: np.ndarray) -> sly.Label:
