@@ -85,6 +85,9 @@ def get_label(
     }
 
     data.update(geometry)
+
+    print(data)
+
     return sly.Label.from_json(data, project_meta)
 
 
