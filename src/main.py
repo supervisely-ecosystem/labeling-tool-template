@@ -66,7 +66,7 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
     image_np = get_image_np(api, event.image_id)
 
     # Get sly.Label object with actual mask from Supervisely API.
-    data = sly.Bitmap.base64_2_data(event.geometry["data"])
+    data = sly.Bitmap.base64_2_data(event.geometry["bitmap"]["data"])
     label = sly.Label(geometry=sly.Bitmap(data=data, project_meta=project_meta))
 
     # Processing the label.
