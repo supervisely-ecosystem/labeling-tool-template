@@ -1,6 +1,7 @@
 import cv2
 import os
 import supervisely as sly
+from typing import Any, Dict
 import supervisely.app.development as sly_app_development
 from supervisely.app.widgets import Container, Switch, Field, Slider, Text
 import numpy as np
@@ -33,7 +34,7 @@ app = sly.Application(layout=layout)
 if sly.is_development():
     load_dotenv("local.env")
     team_id = sly.env.team_id()
-    load_dotenv(os.path.expanduser("~/supervisely.env"))
+    load_dotenv(os.path.expanduser("~/supervisely_umar.env"))
     sly_app_development.supervisely_vpn_network(action="up")
     sly_app_development.create_debug_task(team_id, port="8000")
 
@@ -62,7 +63,7 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
     image_np = get_image_np(api, event.image_id)
 
     # Get sly.Label object with actual mask from Supervisely API.
-    label = api.annotation.get_label_by_id(event.label_id, project_meta)
+    label = get_label(project_meta, event.geometry_type, event.geometry, event.class_title)
 
     # Processing the label.
     # You need to implement your own logic in the process_label function.
@@ -72,6 +73,19 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
     api.annotation.update_label(event.label_id, new_label)
 
     processing_text.hide()
+
+
+def get_label(
+    project_meta: sly.ProjectMeta, geometry_type: str, geometry: Dict[str, Any], class_title: str
+) -> sly.Label:
+    data = {
+        "geometryType": geometry_type,
+        "classTitle": class_title,
+        "tags": [],
+    }
+
+    data.update(geometry)
+    return sly.Label.from_json(data, project_meta)
 
 
 def process(label: sly.Label, image_np: np.ndarray) -> sly.Label:
