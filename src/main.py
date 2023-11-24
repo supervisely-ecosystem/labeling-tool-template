@@ -2,7 +2,7 @@ import cv2
 import os
 import supervisely as sly
 import supervisely.app.development as sly_app_development
-from supervisely.app.widgets import Container, Switch, Field, Slider, Text
+from supervisely.app.widgets import Container, Switch, Field, Slider
 import numpy as np
 from dotenv import load_dotenv
 from datetime import datetime
@@ -24,10 +24,7 @@ dilation_strength_field = Field(
     content=dilation_strength,
 )
 
-processing_text = Text("Processing mask...", status="info")
-processing_text.hide()
-
-layout = Container(widgets=[processing_text, processing_field, dilation_strength_field])
+layout = Container(widgets=[processing_field, dilation_strength_field])
 app = sly.Application(layout=layout)
 
 # Enabling advanced debug mode.
@@ -41,6 +38,9 @@ if sly.is_development():
 # Creating cache for project meta to avoid unnecessary requests to Supervisely API.
 project_metas = {}
 
+# A simple way to throttle the upload of labels to Supervisely platform
+# if multiple events are triggered in a short period of time.
+# In real applications, you need to implement your own logic to avoid unnecessary requests.
 timestamp = None
 
 
@@ -55,7 +55,6 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
         # If the eraser was used, then we don't need to process the label in this tutorial.
         return
 
-    # processing_text.show()
     t = datetime.now().timestamp()
     global timestamp
     timestamp = t
@@ -74,12 +73,9 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
 
     # Upload the label with the updated mask to Supervisely platform.
     if t == timestamp:
-        print("uploading")
+        # If the new event was triggered before processing the previous one,
+        # then we don't need to upload the label to Supervisely platform.
         api.annotation.update_label(event.label_id, label)
-    else:
-        print("upload was throttled")
-
-    # processing_text.hide()
 
 
 def process(mask: np.ndarray) -> np.ndarray:
