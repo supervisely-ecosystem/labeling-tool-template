@@ -58,7 +58,7 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
     project_meta = get_project_meta(api, event.project_id)
 
     # Retrieving object class from project meta to create sly.Label object later.
-    obj_class = project_meta.get_obj_class_by_id(event.class_id)
+    obj_class = project_meta.get_obj_class_by_id(event.object_class_id)
 
     # Processing the mask. You need to implement your own logic in the process function.
     new_mask = process(event.mask)
