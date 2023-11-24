@@ -5,6 +5,7 @@ import supervisely.app.development as sly_app_development
 from supervisely.app.widgets import Container, Switch, Field, Slider, Text
 import numpy as np
 from dotenv import load_dotenv
+from datetime import datetime
 
 
 # Creating widget to turn on/off the processing of labels.
@@ -40,6 +41,8 @@ if sly.is_development():
 # Creating cache for project meta to avoid unnecessary requests to Supervisely API.
 project_metas = {}
 
+timestamp = None
+
 
 @app.event(sly.Event.Brush.DrawLeftMouseReleased)
 def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouseReleased):
@@ -52,7 +55,10 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
         # If the eraser was used, then we don't need to process the label in this tutorial.
         return
 
-    processing_text.show()
+    # processing_text.show()
+    t = datetime.now().timestamp()
+    global timestamp
+    timestamp = t
 
     # Get project meta (using simple cache) to create sly.Label object.
     project_meta = get_project_meta(api, event.project_id)
@@ -67,9 +73,13 @@ def brush_left_mouse_released(api: sly.Api, event: sly.Event.Brush.DrawLeftMouse
     label = sly.Label(geometry=sly.Bitmap(data=new_mask.astype(bool)), obj_class=obj_class)
 
     # Upload the label with the updated mask to Supervisely platform.
-    api.annotation.update_label(event.label_id, label)
+    if t == timestamp:
+        print("uploading")
+        api.annotation.update_label(event.label_id, label)
+    else:
+        print("upload was throttled")
 
-    processing_text.hide()
+    # processing_text.hide()
 
 
 def process(mask: np.ndarray) -> np.ndarray:
